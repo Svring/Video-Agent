@@ -19,6 +19,6 @@
   }
 
   .root {
-    @apply min-h-screen dark:bg-slate-900 dark:text-gray-200;
+    @apply min-h-screen dark:bg-black dark:text-gray-900;
   }
 }

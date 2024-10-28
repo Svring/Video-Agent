@@ -2,11 +2,11 @@
 import { join } from 'path';
 
 // Packages
-import { BrowserWindow, app, ipcMain, IpcMainEvent, nativeTheme } from 'electron';
+import { BrowserWindow, app, nativeTheme } from 'electron';
 import isDev from 'electron-is-dev';
 
-const height = 600;
-const width = 800;
+const height = 800;
+const width = 1200;
 
 function createWindow() {
   // Create the browser window.
@@ -20,7 +20,8 @@ function createWindow() {
     fullscreenable: true,
     webPreferences: {
       preload: join(__dirname, 'preload.js')
-    }
+    },
+    titleBarStyle: 'hiddenInset'
   });
 
   const port = process.env.PORT || 3000;
@@ -32,23 +33,6 @@ function createWindow() {
   } else {
     window?.loadFile(url);
   }
-  // Open the DevTools.
-  // window.webContents.openDevTools();
-
-  // For AppBar
-  ipcMain.on('minimize', () => {
-    // eslint-disable-next-line no-unused-expressions
-    window.isMinimized() ? window.restore() : window.minimize();
-    // or alternatively: win.isVisible() ? win.hide() : win.show()
-  });
-  ipcMain.on('maximize', () => {
-    // eslint-disable-next-line no-unused-expressions
-    window.isMaximized() ? window.restore() : window.maximize();
-  });
-
-  ipcMain.on('close', () => {
-    window.close();
-  });
 
   nativeTheme.themeSource = 'dark';
 }
@@ -76,8 +60,3 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
-// listen the channel `message` and resend the received message to the renderer process
-ipcMain.on('message', (event: IpcMainEvent, message: any) => {
-  console.log(message);
-  setTimeout(() => event.sender.send('message', 'common.hiElectron'), 500);
-});
