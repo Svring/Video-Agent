@@ -2,11 +2,64 @@
 import { join } from 'path';
 
 // Packages
-import { BrowserWindow, app, nativeTheme } from 'electron';
+import { BrowserWindow, app, nativeTheme, ipcMain, IpcMainInvokeEvent, net } from 'electron';
 import isDev from 'electron-is-dev';
+import fs from 'fs';
 
 const height = 800;
 const width = 1200;
+
+async function saveVideo(_: IpcMainInvokeEvent, filePath: string, videoPath: string) {
+  console.log("Save video process initiated.");
+
+  // Extract folder name from filePath
+  const folderName = filePath.split('/').pop() || 'default';
+
+  // Function to generate the next available filename
+  const getNextFileName = (folderPath: string, prefix: string) => {
+    const files = fs.readdirSync(folderPath);
+    let maxIndex = -1;
+
+    files.forEach(file => {
+      const match = file.match(new RegExp(`^${prefix}-(\\d+)\\.mp4$`));
+      if (match) {
+        const index = parseInt(match[1], 10);
+        if (index > maxIndex) {
+          maxIndex = index;
+        }
+      }
+    });
+
+    const nextIndex = maxIndex + 1;
+    return `${prefix}-${nextIndex}.mp4`;
+  };
+
+  // Generate the next available filename
+  const videoFileName = getNextFileName(filePath, folderName);
+  const fullFilePath = join(filePath, videoFileName);
+
+  const file = fs.createWriteStream(fullFilePath);
+
+  const request = net.request(videoPath);
+
+  request.on('response', (response) => {
+    console.log("Downloading video...");
+    response.on('data', (chunk) => {
+      file.write(chunk);
+    });
+
+    response.on('end', () => {
+      file.end();
+      console.log('No more data in response.');
+    });
+  });
+
+  request.on('error', (err) => {
+    console.error(`Error: ${err.message}`);
+  });
+
+  request.end();
+}
 
 function createWindow() {
   // Create the browser window.
@@ -19,7 +72,8 @@ function createWindow() {
     resizable: true,
     fullscreenable: true,
     webPreferences: {
-      preload: join(__dirname, 'preload.js')
+      preload: join(__dirname, 'preload.js'),
+      sandbox: false
     },
     titleBarStyle: 'hiddenInset'
   });
@@ -41,6 +95,7 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  ipcMain.handle('save-video', saveVideo);
   createWindow();
 
   app.on('activate', () => {

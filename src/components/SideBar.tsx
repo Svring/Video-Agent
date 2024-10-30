@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import IconButton from '@mui/material/IconButton';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
@@ -23,8 +22,9 @@ export default function SideBar({ setVideoPath }:
         input.onchange = (e) => {
             const files = (e.target as HTMLInputElement).files;
             if (files && files.length > 0) {
+                const folderName = files[0].webkitRelativePath.split('/')[0];
                 const absolutePath = files[0].path.split(files[0].webkitRelativePath)[0];
-                setFolderUrl(absolutePath);
+                setFolderUrl(absolutePath + folderName);
             }
         };
         input.click();
@@ -44,26 +44,38 @@ export default function SideBar({ setVideoPath }:
 
     const handleSave = async () => {
         if (!folderUrl || !videoUrl) return;
-        const fileName = videoUrl.split('/').pop() || 'video';
-        const filePath = `${folderUrl}/${fileName}`;
-        setVideoPath(filePath);
+        window.fileAPI.saveVideo(folderUrl, videoUrl);
+    };
+
+    const handleCopyVideoUrl = () => {
+        navigator.clipboard.writeText(videoUrl)
+            .then(() => {
+                console.log('Video URL copied to clipboard');
+                setOpen(true);
+            })
+            .catch(err => {
+                console.error('Failed to copy video URL: ', err);
+            });
     };
 
     return (
-        <div className="flex flex-col gap-1 mx-0.5 pt-8 pb-2 h-full rounded-lg">
-            <IconButton onClick={handleFolderOpen}>
-                <FolderOpenIcon sx={{ fontSize: 30, color: 'white' }} />
-            </IconButton>
-            <IconButton onClick={handleInsertLink}>
-                <InsertLinkIcon sx={{ fontSize: 30, color: 'white' }} />
-            </IconButton>
-            <IconButton disabled={!videoUrl} onClick={handleSave}>
+        <div className="flex flex-col gap-1 mx-0.5 pt-8 pb-2 h-full rounded-lg items-center">
+            <Button onClick={handleFolderOpen} isIconOnly
+                className={`bg-transparent ${folderUrl ? 'text-cyan-500' : 'text-white'}`}>
+                <FolderOpenIcon sx={{ fontSize: 30 }} />
+            </Button>
+            <Button onClick={handleInsertLink} color="default" isIconOnly
+                className={`bg-transparent ${videoUrl ? 'text-cyan-500' : 'text-white'}`}>
+                <InsertLinkIcon sx={{ fontSize: 30 }} />
+            </Button>
+            <Button disabled={!videoUrl} onClick={handleSave} isDisabled={!videoUrl || !folderUrl}
+                color="default" isIconOnly className="bg-transparent">
                 <SaveAltIcon sx={{ fontSize: 30, color: videoUrl ? 'white' : 'gray' }} />
-            </IconButton>
-            <div className="flex-grow draggable" />
-            <IconButton onClick={onOpen}>
+            </Button>
+            <div className="flex-grow draggable w-full" />
+            <Button onClick={onOpen} color="default" isIconOnly className="bg-transparent">
                 <SettingsIcon sx={{ fontSize: 30, color: 'white' }} />
-            </IconButton>
+            </Button>
             <Snackbar
                 open={open}
                 autoHideDuration={2000}
@@ -77,14 +89,22 @@ export default function SideBar({ setVideoPath }:
                             <ModalHeader className="flex flex-col gap-1 text-white">Settings</ModalHeader>
                             <ModalBody>
                                 <p className="text-white">
-                                    {videoUrl}
+                                    In the depths of code we write,
+                                    Digital dreams take their flight.
+                                    Through pixels, bytes, and flowing streams,
+                                    We build the future, or so it seems.
+
+                                    Each function like a verse so neat,
+                                    Making our program feel complete.
+                                    In this dance of ones and zeros bright,
+                                    We craft our world, day and night.
                                 </p>
                             </ModalBody>
                             <ModalFooter>
                                 <Button color="danger" variant="light" onPress={onClose}>
                                     Close
                                 </Button>
-                                <Button color="primary" onPress={onClose}>
+                                <Button color="primary" onPress={() => { handleCopyVideoUrl(); onClose(); }}>
                                     Action
                                 </Button>
                             </ModalFooter>
