@@ -22,13 +22,27 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
   }), []);
 
   useEffect(() => {
+    if (!reactPlayerRef.current?.getInternalPlayer()) return;
+    if (!isFocused && reactPlayerRef.current) {
+      reactPlayerRef.current.getInternalPlayer().pause();
+    } else if (isFocused && reactPlayerRef.current) {
+      reactPlayerRef.current.getInternalPlayer().play();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isFocused && reactPlayerRef.current) {
         const currentTime = reactPlayerRef.current.getCurrentTime();
+        const internalPlayer = reactPlayerRef.current.getInternalPlayer();
 
         if (event.key === 'ArrowLeft') {
-          reactPlayerRef.current.seekTo(Math.max(currentTime - skipInterval, 0));
-          reactPlayerRef.current.getInternalPlayer().pause();
+          const newTime = Math.max(currentTime - skipInterval, 0);
+          reactPlayerRef.current.seekTo(newTime, 'seconds');
+          setTimeout(() => {
+            internalPlayer.pause();
+            setProgress(newTime);
+          }, 50);
         } else if (event.key === 'ArrowRight') {
           reactPlayerRef.current.seekTo(Math.min(currentTime + skipInterval, duration));
           reactPlayerRef.current.getInternalPlayer().pause();
@@ -52,6 +66,10 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
             if (prevSkipInterval === 5) return 1;
             return 1;
           });
+        } else if (event.key === 'm') {
+          setIsMuted(!isMuted);
+          const internalPlayer = reactPlayerRef.current.getInternalPlayer();
+          internalPlayer.muted = !isMuted;
         }
       }
     };
@@ -61,7 +79,7 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isFocused]);
+  }, [isFocused, isMuted]);
 
   const handleProgress = (state: { playedSeconds: number }) => {
     setProgress(state.playedSeconds); // Update progress with current time in seconds
@@ -90,6 +108,9 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
       }}
       onBlur={() => {
         setIsFocused(false);
+        if (reactPlayerRef.current) {
+          reactPlayerRef.current.getInternalPlayer().pause();
+        }
       }}
       className="flex flex-col justify-center items-center 
       mx-0.5 h-full bg-gray-900 rounded-lg focus:outline-none"

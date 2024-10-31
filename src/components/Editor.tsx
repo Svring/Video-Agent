@@ -7,8 +7,10 @@ import {
     useComponentsContext,
     useBlockNoteEditor,
     SideMenuProps,
+    DragHandleMenu,
+    DragHandleMenuProps,
 } from "@blocknote/react";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteIcon from '@mui/icons-material/Delete';
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 
 const Editor = forwardRef<{ focus: () => void }, {
@@ -17,7 +19,6 @@ const Editor = forwardRef<{ focus: () => void }, {
     ((props, ref) => {
         const editor = useCreateBlockNote();
         const editorRef = useRef<HTMLDivElement>(null);
-        const regex = '(?<=[.!?]) +';
 
         useImperativeHandle(ref, () => ({
             focus: () => {
@@ -25,10 +26,10 @@ const Editor = forwardRef<{ focus: () => void }, {
                     // Get all focusable elements
                     const focusable = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
                     const elements = Array.from(document.querySelectorAll(focusable));
-                    
+
                     // Find current element index
                     const currentIndex = elements.indexOf(editorRef.current as Element);
-                    
+
                     // Focus next element or first if at end
                     const nextElement = elements[currentIndex + 1] || elements[0];
                     (nextElement as HTMLElement).focus();
@@ -54,8 +55,14 @@ const Editor = forwardRef<{ focus: () => void }, {
                     <SideMenuController
                         sideMenu={(props) => (
                             <SideMenu {...props}>
-                                <DuplicateBlockButton {...props} />
-                                <DragHandleButton {...props} />
+                                <RemoveBlockButton {...props} />
+                                <DragHandleButton {...props} dragHandleMenu={(props) => (
+                                    <DragHandleMenu {...props} >
+                                        <DuplicateBlockButton {...props}>Duplicate</DuplicateBlockButton>
+                                        <SplitBlockButton {...props}>Split</SplitBlockButton>
+                                        <MergeBlockButton {...props}>Merge</MergeBlockButton>
+                                    </DragHandleMenu>
+                                )} />
                             </SideMenu>
                         )}
                     />
@@ -64,25 +71,84 @@ const Editor = forwardRef<{ focus: () => void }, {
         );
     });
 
-function DuplicateBlockButton(props: SideMenuProps) {
+function RemoveBlockButton(props: SideMenuProps) {
     const editor = useBlockNoteEditor();
-
     const Components = useComponentsContext()!;
 
     return (
         <Components.SideMenu.Button
-            label="Duplicate block"
+            label="Remove block"
             icon={
-                <ContentCopyIcon
+                <DeleteIcon
                     onClick={() => {
-                        const duplicatedBlock = editor.getBlock(props.block.id);
-                        if (duplicatedBlock) {
-                            editor.insertBlocks([duplicatedBlock], props.block, 'after');
-                        }
+                        editor.removeBlocks([props.block]);
                     }}
                 />
             }
         />
+    );
+}
+
+function DuplicateBlockButton(props: DragHandleMenuProps) {
+    const editor = useBlockNoteEditor();
+    const Components = useComponentsContext()!;
+
+    return (
+        <Components.Generic.Menu.Item
+            onClick={() => {
+                editor.insertBlocks([props.block], props.block, 'after');
+            }}>
+            Duplicate
+        </Components.Generic.Menu.Item>
+    );
+}
+
+function SplitBlockButton(props: DragHandleMenuProps) {
+    const editor = useBlockNoteEditor();
+    const Components = useComponentsContext()!;
+    const regex = /(?<=[.!?]) +/;
+
+    return (
+        <Components.Generic.Menu.Item
+            onClick={() => {
+                const { content } = props.block;
+                if (Array.isArray(content) && content.length > 0 && 'text' in content[0]) {
+                    const { text } = content[0];
+                    const splitContent = text.split(regex).reverse();
+                    splitContent.forEach((text) => {
+                        editor.insertBlocks([{ type: 'paragraph', content: text }], props.block, 'after');
+                    });
+                    editor.removeBlocks([props.block]);
+                }
+            }}>
+            Split
+        </Components.Generic.Menu.Item>
+    );
+}
+
+function MergeBlockButton(props: DragHandleMenuProps) {
+    const editor = useBlockNoteEditor();
+    const Components = useComponentsContext()!;
+
+    return (
+        <Components.Generic.Menu.Item
+            onClick={() => {
+                const combinedText = editor.document
+                    .reduce<string[]>((acc, block) => {
+                        if (Array.isArray(block.content) && block.content.length > 0 && 'text' in block.content[0]) {
+                            acc.push(block.content[0].text);
+                        }
+                        return acc;
+                    }, [])
+                    .join(' ');
+
+                editor.replaceBlocks(editor.document, [{ 
+                    type: 'paragraph', 
+                    content: combinedText 
+                }]);
+            }}>
+            Merge
+        </Components.Generic.Menu.Item>
     );
 }
 
