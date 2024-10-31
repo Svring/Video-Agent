@@ -21,8 +21,22 @@ const Editor = forwardRef<{ focus: () => void }, {
 
         useImperativeHandle(ref, () => ({
             focus: () => {
+                const focusNextElement = () => {
+                    // Get all focusable elements
+                    const focusable = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+                    const elements = Array.from(document.querySelectorAll(focusable));
+                    
+                    // Find current element index
+                    const currentIndex = elements.indexOf(editorRef.current as Element);
+                    
+                    // Focus next element or first if at end
+                    const nextElement = elements[currentIndex + 1] || elements[0];
+                    (nextElement as HTMLElement).focus();
+                };
+
                 editorRef.current?.focus();
-            }
+                focusNextElement();
+            },
         }), []);
 
         return (

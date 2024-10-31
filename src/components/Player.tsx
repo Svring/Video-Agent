@@ -91,9 +91,16 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
       onBlur={() => {
         setIsFocused(false);
       }}
-      className="flex flex-col justify-center items-center mx-0.5 h-full bg-gray-900 rounded-lg"
+      className="flex flex-col justify-center items-center 
+      mx-0.5 h-full bg-gray-900 rounded-lg focus:outline-none"
     >
-      <Card isBlurred shadow="sm" className="w-full h-full border-none bg-gray-900 rounded-lg">
+      <Card 
+        isBlurred 
+        shadow="sm" 
+        className={`w-full h-full border-none bg-gray-900 rounded-lg ${
+          isFocused ? 'ring-1 ring-inset ring-cyan-500' : ''
+        }`}
+      >
         <CardBody>
           <ReactPlayer
             ref={reactPlayerRef}

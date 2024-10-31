@@ -13,6 +13,7 @@ function App() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === '`') {
+        event.preventDefault();
         if (focusedComponent === 'player') {
           editorRef.current?.focus();
           setFocusedComponent('editor');
