@@ -119,10 +119,20 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
             color="foreground"
             className="max-w-sm"
             value={(progress / duration) * 100} // Adjust slider value to reflect current time
+            onFocus={() => {
+              // Immediately shift focus back to the container
+              playerContainerRef.current?.focus();
+            }}
+            onClick={() => {
+              // Ensure container gets focus after click interactions too
+              playerContainerRef.current?.focus();
+            }}
             onChange={(value) => {
               const newTime = (value as number / 100) * duration;
               setProgress(newTime);
               reactPlayerRef.current?.seekTo(newTime);
+              // Also return focus after value changes
+              playerContainerRef.current?.focus();
             }}
           />
           <div className="flex flex-row items-center w-full h-5 px-4 text-xs text-gray-400 max-w-sm">
