@@ -144,15 +144,7 @@ export default function SideBar({ setVideoPath }:
                             <ModalHeader className="flex flex-col gap-1 text-white">Settings</ModalHeader>
                             <ModalBody>
                                 <p className="text-white">
-                                    In the depths of code we write,
-                                    Digital dreams take their flight.
-                                    Through pixels, bytes, and flowing streams,
-                                    We build the future, or so it seems.
-
-                                    Each function like a verse so neat,
-                                    Making our program feel complete.
-                                    In this dance of ones and zeros bright,
-                                    We craft our world, day and night.
+                                    Hail holy queen of the sea, whirling in rags, you're vast and you're sad.
                                 </p>
                             </ModalBody>
                             <ModalFooter>
