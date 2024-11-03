@@ -36,40 +36,31 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
         const currentTime = reactPlayerRef.current.getCurrentTime();
         const internalPlayer = reactPlayerRef.current.getInternalPlayer();
 
-        if (event.key === 'ArrowLeft') {
-          const newTime = Math.max(currentTime - skipInterval, 0);
-          reactPlayerRef.current.seekTo(newTime, 'seconds');
-          setTimeout(() => {
-            internalPlayer.pause();
-            setProgress(newTime);
-          }, 50);
-        } else if (event.key === 'ArrowRight') {
-          reactPlayerRef.current.seekTo(Math.min(currentTime + skipInterval, duration));
-          reactPlayerRef.current.getInternalPlayer().pause();
-        } else if (event.key === ' ') {
-          if (reactPlayerRef.current.getInternalPlayer().paused) {
-            reactPlayerRef.current.getInternalPlayer().play();
-          } else {
-            reactPlayerRef.current.getInternalPlayer().pause();
-          }
-        } else if (event.key === 'ArrowUp') {
-          setFrequency((prevFrequency) => {
-            if (prevFrequency === 0.5) return 1;
-            if (prevFrequency === 1) return 2;
-            if (prevFrequency === 2) return 0.5;
-            return 1;
-          });
-        } else if (event.key === 'ArrowDown') {
-          setSkipInterval((prevSkipInterval) => {
-            if (prevSkipInterval === 1) return 2;
-            if (prevSkipInterval === 2) return 5;
-            if (prevSkipInterval === 5) return 1;
-            return 1;
-          });
-        } else if (event.key === 'm') {
-          setIsMuted(!isMuted);
-          const internalPlayer = reactPlayerRef.current.getInternalPlayer();
-          internalPlayer.muted = !isMuted;
+        switch (event.key) {
+          case 'ArrowLeft':
+            handleSeek(Math.max(currentTime - skipInterval, 0));
+            setTimeout(() => {
+              internalPlayer.pause();
+            }, 50);
+            break;
+          case 'ArrowRight':
+            handleSeek(Math.min(currentTime + skipInterval, duration));
+            setTimeout(() => {
+              internalPlayer.pause();
+            }, 50);
+            break;
+          case ' ':
+            handlePlayPause();
+            break;
+          case 'ArrowUp':
+            handleFrequency();
+            break;
+          case 'ArrowDown':
+            handleSkipInterval();
+            break;
+          case 'm':
+            handleMute();
+            break;
         }
       }
     };
@@ -79,23 +70,52 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isFocused, isMuted]);
+  }, [isFocused, skipInterval, duration]);
 
   const handleProgress = (state: { playedSeconds: number }) => {
+    if (!reactPlayerRef.current?.getInternalPlayer()) return;
     setProgress(state.playedSeconds); // Update progress with current time in seconds
   };
 
   const handleMute = () => {
-    if (reactPlayerRef.current) {
-      const internalPlayer = reactPlayerRef.current.getInternalPlayer();
-      if (isMuted) {
-        internalPlayer.muted = false;
-        setIsMuted(false);
-      } else {
-        internalPlayer.muted = true;
-        setIsMuted(true);
-      }
+    if (!reactPlayerRef.current?.getInternalPlayer()) return;
+    const internalPlayer = reactPlayerRef.current.getInternalPlayer();
+      setIsMuted((prevIsMuted) => {
+        internalPlayer.muted = !prevIsMuted;
+      return !prevIsMuted;
+    });
+  };
+
+  const handlePlayPause = () => {
+    if (!reactPlayerRef.current?.getInternalPlayer()) return;
+    const internalPlayer = reactPlayerRef.current.getInternalPlayer();
+    if (internalPlayer.paused) {
+      internalPlayer.play();
+    } else {
+      internalPlayer.pause();
     }
+  };
+
+  const handleSeek = (newTime: number) => {
+    reactPlayerRef.current?.seekTo(newTime, 'seconds');
+  };
+
+  const handleFrequency = () => {
+    setFrequency((prevFrequency) => {
+      if (prevFrequency === 0.5) return 1;
+      if (prevFrequency === 1) return 2;
+      if (prevFrequency === 2) return 0.5;
+      return 1;
+    });
+  };
+
+  const handleSkipInterval = () => {
+    setSkipInterval((prevSkipInterval) => {
+      if (prevSkipInterval === 1) return 2;
+      if (prevSkipInterval === 2) return 5;
+      if (prevSkipInterval === 5) return 1;
+      return 1;
+    });
   };
 
   return (
@@ -122,7 +142,9 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
           isFocused ? 'ring-1 ring-inset ring-cyan-500' : ''
         }`}
       >
-        <CardBody>
+        <CardBody onClick={() => {
+          handlePlayPause();
+        }}>
           <ReactPlayer
             ref={reactPlayerRef}
             url={props.videoPath}

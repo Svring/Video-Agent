@@ -17,21 +17,25 @@ async function saveVideo(_: IpcMainInvokeEvent, filePath: string, videoPath: str
 
   // Function to generate the next available filename
   const getNextFileName = (folderPath: string, prefix: string) => {
+    // Check if the folder exists, create it if it doesn't
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+
     const files = fs.readdirSync(folderPath);
-    let maxIndex = -1;
+    let maxIndex = 0;
 
     files.forEach(file => {
       const match = file.match(new RegExp(`^${prefix}-(\\d+)\\.mp4$`));
       if (match) {
         const index = parseInt(match[1], 10);
-        if (index > maxIndex) {
-          maxIndex = index;
+        if (index >= maxIndex) {
+          maxIndex = index + 1;
         }
       }
     });
 
-    const nextIndex = maxIndex + 1;
-    return `${prefix}-${nextIndex}.mp4`;
+    return `${prefix}-${maxIndex}.mp4`;
   };
 
   // Generate the next available filename
