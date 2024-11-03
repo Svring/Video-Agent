@@ -141,19 +141,19 @@ export default function SideBar({ setVideoPath }:
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1 text-white">Settings</ModalHeader>
+                            <ModalHeader className="flex flex-col gap-1 text-white">Hearken to my prayer</ModalHeader>
                             <ModalBody>
                                 <p className="text-white">
                                     Hail holy queen of the sea, whirling in rags, you're vast and you're sad.
                                 </p>
                             </ModalBody>
                             <ModalFooter>
-                                <Button color="danger" variant="light" onPress={onClose}>
+                                {/* <Button color="danger" variant="light" onPress={onClose}>
                                     Close
                                 </Button>
                                 <Button color="primary" onPress={() => { handleCopyVideoUrl(); onClose(); }}>
                                     Action
-                                </Button>
+                                </Button> */}
                             </ModalFooter>
                         </>
                     )}
