@@ -112,10 +112,12 @@ function SplitBlockButton(props: DragHandleMenuProps) {
     <Components.Generic.Menu.Item
       onClick={() => {
         const { content } = props.block;
-        if (Array.isArray(content) && content.length > 0 && 'text' in content[0]) {
-          const { text } = content[0];
-          const splitContent = text.split(regex).reverse();
-          splitContent.forEach((text) => {
+        if (Array.isArray(content) && content.length > 0) {
+          const text = content.reduce((acc, block) => {
+            return acc + (block.type === 'link' ? block.content[0].text : block.text);
+          }, '');
+
+          text.split(regex).reverse().forEach((text) => {
             editor.insertBlocks([{ type: 'paragraph', content: text }], props.block, 'after');
           });
           editor.removeBlocks([props.block]);
