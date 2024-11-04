@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* For AppBar */
+.draggable {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+
+.undraggable {
+  -webkit-app-region: no-drag;
+}
+
+@layer base {
+  code {
+    @apply mx-2 rounded px-1 py-0.5 bg-gray-700;
+  }
+
+  .root {
+    @apply min-h-screen dark:bg-black dark:text-gray-900;
+  }
+}
+
+/* Base theme */
+.bn-container[data-theming-css-demo][data-color-scheme] {
+  --bn-colors-editor-background: bg-zinc-900;
+}
+ 
+/* Changes for dark mode */
+.bn-container[data-theming-css-variables-demo][data-color-scheme="dark"] {
+  --bn-colors-editor-text: #ffffff;
+  --bn-colors-editor-background: #9b0000;
+  --bn-colors-side-menu: #ffffff;
+}
+ 

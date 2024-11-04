@@ -1,50 +1,57 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { useEffect, useState, useRef } from 'react';
+import { Allotment } from "allotment";
+import Player from './components/Player';
+import Editor from './components/Editor';
+import SideBar from './components/SideBar';
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [videoPath, setVideoPath] = useState<string>("");
+  const playerRef = useRef<{ focus: () => void } | null>(null);
+  const editorRef = useRef<{ focus: () => void } | null>(null);
+  const [focusedComponent, setFocusedComponent] = useState<'player' | 'editor' | null>(null);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === '`') {
+        event.preventDefault();
+        if (focusedComponent === 'player') {
+          editorRef.current?.focus();
+          setFocusedComponent('editor');
+        } else if (focusedComponent === 'editor') {
+          playerRef.current?.focus();
+          setFocusedComponent('player');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [focusedComponent]);
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+    <div className="flex flex-row py-2 px-1.5 gap-1 justify-between w-full h-screen">
+      <Allotment separator={false}>
+        <Allotment.Pane minSize={60} preferredSize={70}>
+          <SideBar setVideoPath={setVideoPath}/>
+        </Allotment.Pane>
+        <Allotment.Pane preferredSize={500}>
+          <Player
+            videoPath={videoPath}
+            ref={playerRef}
+            setFocusedComponent={setFocusedComponent}
+          />
+        </Allotment.Pane>
+        <Allotment.Pane>
+          <Editor
+            ref={editorRef}
+            setFocusedComponent={setFocusedComponent}
+          />
+        </Allotment.Pane>
+      </Allotment>
+    </div>
   );
 }
 
