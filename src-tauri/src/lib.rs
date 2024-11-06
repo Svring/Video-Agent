@@ -1,4 +1,5 @@
-use tauri::{TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
+// use tauri::{TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
+use tauri::{WebviewUrl, WebviewWindowBuilder};
 
 use std::path::Path;
 use tauri_plugin_dialog::DialogExt;
@@ -85,8 +86,8 @@ pub fn run() {
                 .inner_size(1200.0, 800.0);
 
             // set transparent title bar only when building for macOS
-            #[cfg(target_os = "macos")]
-            let win_builder = win_builder.title_bar_style(TitleBarStyle::Transparent);
+            // #[cfg(target_os = "macos")]
+            // let win_builder = win_builder.title_bar_style(TitleBarStyle::Transparent);
 
             let window = win_builder.build().unwrap();
 
