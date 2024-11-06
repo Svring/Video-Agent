@@ -11,6 +11,7 @@ import {
     Listbox, ListboxItem, Switch
 } from "@nextui-org/react";
 import { invoke } from "@tauri-apps/api/core";
+import { readText } from '@tauri-apps/plugin-clipboard-manager';
 
 export default function SideBar({ setVideoPath }:
     { setVideoPath: (videoPath: string) => void }) {
@@ -24,6 +25,7 @@ export default function SideBar({ setVideoPath }:
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const { isOpen: isSettingsOpen, onOpen: onSettingsOpen,
         onClose: onSettingsClose } = useDisclosure();
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (darkMode) {
@@ -34,21 +36,16 @@ export default function SideBar({ setVideoPath }:
     }, [darkMode]);
 
     const handleFolderOpen = async () => {
-        // try {
-        //     // Use showDirectoryPicker to get directory handle
-        //     const dirHandle = await window.showDirectoryPicker();
-        //     // Get the absolute path using Tauri's API
-        //     const fullPath = await invoke('get_directory_path', { 
-        //         path: dirHandle.name 
-        //     });
-        //     setFolderUrl(fullPath as string);
-        // } catch (err) {
-        //     console.error('Error selecting directory:', err);
-        // }
+        try {
+            const fullPath = await invoke('select_folder');
+            setFolderUrl(fullPath as string);
+        } catch (err) {
+            console.error('Error selecting directory:', err);
+        }
     };
 
     const handleInsertLink = () => {
-        navigator.clipboard.readText()
+        readText()
             .then(text => {
                 setVideoUrl(text);
                 setVideoPath(text);
@@ -60,11 +57,19 @@ export default function SideBar({ setVideoPath }:
     };
 
     const handleSave = async () => {
-        if (!folderUrl || !videoUrl) return;
-        console.log(folderUrl);
-        console.log(videoUrl);
-        const response = await invoke('save_video', { video_path: videoUrl, folder_path: folderUrl });
-        console.log(response);
+        if (!folderUrl || !videoUrl || isSaving) return;
+        try {
+            setIsSaving(true);
+            const response = await invoke('save_video', { 
+                videoPath: videoUrl,
+                folderPath: folderUrl
+            });
+            console.log(response);
+        } catch (error) {
+            console.error('Error saving video:', error);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -77,9 +82,16 @@ export default function SideBar({ setVideoPath }:
                 className={`bg-transparent ${videoUrl ? 'text-cyan-500' : 'text-white'}`}>
                 <InsertLinkIcon sx={{ fontSize: 30 }} />
             </Button>
-            <Button disabled={!videoUrl} onClick={handleSave} isDisabled={!videoUrl || !folderUrl}
-                color="default" isIconOnly className="bg-transparent">
-                <SaveAltIcon sx={{ fontSize: 30, color: videoUrl ? 'white' : 'gray' }} />
+            <Button 
+                disabled={!videoUrl || !folderUrl || isSaving} 
+                onClick={handleSave} 
+                isDisabled={!videoUrl || !folderUrl || isSaving}
+                color="default" 
+                isIconOnly 
+                className="bg-transparent"
+                isLoading={isSaving}
+            >
+                <SaveAltIcon sx={{ fontSize: 30, color: videoUrl && !isSaving ? 'white' : 'gray' }} />
             </Button>
             <div className="flex-grow draggable w-full" />
             <Button onClick={onSettingsOpen} color="default" isIconOnly className="bg-transparent">
