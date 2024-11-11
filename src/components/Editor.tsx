@@ -12,6 +12,7 @@ import {
 } from "@blocknote/react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { forwardRef, useImperativeHandle, useRef } from "react";
+// import Highlighter from "react-highlight-words";
 
 const Editor = forwardRef<{ focus: () => void }, {
   setFocusedComponent: (component: 'player' | 'editor' | null) => void
@@ -44,14 +45,16 @@ const Editor = forwardRef<{ focus: () => void }, {
       <div
         ref={editorRef}
         tabIndex={0}
-        className="flex flex-col mx-0.5 h-full bg-gray-900 rounded-lg p-2 overflow-auto dark:bg-zinc-900"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
+        className="flex flex-col mx-0.5 h-full bg-gray-900 rounded-lg p-2 overflow-y-auto scrollbar-hide dark:bg-zinc-900"
         onFocus={() => props.setFocusedComponent('editor')}
       >
-        <BlockNoteView slashMenu={false} editor={editor} sideMenu={false} data-theming-css-demo>
+        {/* <Highlighter
+          highlightClassName="YourHighlightClass"
+          searchWords={["and", "or", "the"]}
+          autoEscape={true}
+          textToHighlight="The dog is chasing the cat. Or perhaps they're just playing?"
+        /> */}
+        <BlockNoteView editor={editor} sideMenu={false} data-theming-css-demo>
           <SideMenuController
             sideMenu={(props) => (
               <SideMenu {...props}>

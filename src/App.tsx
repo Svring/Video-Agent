@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Allotment } from "allotment";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Player from './components/Player';
 import Editor from './components/Editor';
 import SideBar from './components/SideBar';
@@ -33,24 +33,26 @@ function App() {
 
   return (
     <div className="flex flex-row py-2 px-1.5 gap-1 justify-between w-full h-screen">
-      <Allotment separator={false}>
-        <Allotment.Pane minSize={60} preferredSize={70}>
-          <SideBar setVideoPath={setVideoPath}/>
-        </Allotment.Pane>
-        <Allotment.Pane preferredSize={500}>
+      <PanelGroup direction="horizontal">
+        <Panel defaultSize={4} minSize={5}>
+          <SideBar setVideoPath={setVideoPath} />
+        </Panel>
+        <PanelResizeHandle/>
+        <Panel defaultSize={40} minSize={20}>
           <Player
             videoPath={videoPath}
             ref={playerRef}
             setFocusedComponent={setFocusedComponent}
           />
-        </Allotment.Pane>
-        <Allotment.Pane>
+        </Panel>
+        <PanelResizeHandle/>
+        <Panel defaultSize={40} minSize={20}>
           <Editor
             ref={editorRef}
             setFocusedComponent={setFocusedComponent}
           />
-        </Allotment.Pane>
-      </Allotment>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 }

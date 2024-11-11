@@ -73,7 +73,7 @@ export default function SideBar({ setVideoPath }:
     };
 
     return (
-        <div className="flex flex-col gap-1 mx-0.5 pb-2 h-full rounded-lg items-center">
+        <div className="flex flex-col gap-1 mx-0.5 pt-4 pb-2 h-full rounded-lg items-center">
             <Button onClick={handleFolderOpen} isIconOnly
                 className={`bg-transparent ${folderUrl ? 'text-cyan-500' : 'text-white'}`}>
                 <FolderOpenIcon sx={{ fontSize: 30 }} />
@@ -93,7 +93,7 @@ export default function SideBar({ setVideoPath }:
             >
                 <SaveAltIcon sx={{ fontSize: 30, color: videoUrl && !isSaving ? 'white' : 'gray' }} />
             </Button>
-            <div className="flex-grow draggable w-full" />
+            <div data-tauri-drag-region className="flex-grow w-full" />
             <Button onClick={onSettingsOpen} color="default" isIconOnly className="bg-transparent">
                 <HelpOutlineIcon sx={{ fontSize: 30, color: 'white' }} />
             </Button>
@@ -147,7 +147,7 @@ export default function SideBar({ setVideoPath }:
                                 <Button color="danger" variant="light" onPress={onClose}>
                                     Close
                                 </Button>
-                                <Switch
+                                {/* <Switch
                                     defaultSelected
                                     size="lg"
                                     color="success"
@@ -156,7 +156,7 @@ export default function SideBar({ setVideoPath }:
                                     onValueChange={() => setDarkMode(!darkMode)}
                                 >
                                     Dark mode
-                                </Switch>
+                                </Switch> */}
                             </ModalFooter>
                         </>
                     )}
@@ -166,7 +166,7 @@ export default function SideBar({ setVideoPath }:
                 <ModalContent>
                     {/* {(onClose) => ( */}
                         <>
-                            <ModalHeader className="flex flex-col gap-1 text-white">Hearken to my prayer</ModalHeader>
+                            <ModalHeader className="flex flex-col gap-1 text-white">Nevermore</ModalHeader>
                             <ModalBody>
                                 <p className="text-white">
                                     Hail holy queen of the sea, whirling in rags, you're vast and you're sad.

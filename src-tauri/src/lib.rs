@@ -84,23 +84,44 @@ pub fn run() {
             let win_builder = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
                 .title("")
                 .inner_size(1200.0, 800.0);
+            // .decorations(false);
 
-            // set transparent title bar only when building for macOS
-            #[cfg(target_os = "macos")]
-            let win_builder = win_builder.title_bar_style(TitleBarStyle::Transparent);
+            let win_builder = win_builder.title_bar_style(TitleBarStyle::Overlay);
 
             let window = win_builder.build().unwrap();
 
-            // set background color only when building for macOS
+            // let window = app.get_window("main").unwrap();
+
+            // window
+            //     .set_effects(
+            //         EffectsBuilder::new()
+            //             .effect(Effect::Popover)
+            //             .state(EffectState::Active)
+            //             .radius(8.0)
+            //             .build(),
+            //     )
+            //     .unwrap();
+
+            // macOS specific configuration
             #[cfg(target_os = "macos")]
             {
-                use cocoa::appkit::{NSColor, NSWindow};
+                use cocoa::appkit::{NSColor, NSWindow, NSWindowStyleMask};
                 use cocoa::base::{id, nil};
 
                 let ns_window = window.ns_window().unwrap() as id;
                 unsafe {
+                    // Set background color
                     let bg_color = NSColor::colorWithRed_green_blue_alpha_(nil, 0.0, 0.0, 0.0, 1.0);
                     ns_window.setBackgroundColor_(bg_color);
+
+                    // Enable rounded corners and shadow
+                    let style_mask = ns_window.styleMask();
+                    ns_window.setStyleMask_(
+                        style_mask | NSWindowStyleMask::NSFullSizeContentViewWindowMask,
+                    );
+
+                    // Enable window shadow
+                    ns_window.setHasShadow_(cocoa::base::YES);
                 }
             }
 
