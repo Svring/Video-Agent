@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import {
     FolderOpen as FolderOpenIcon, InsertLink as InsertLinkIcon,
     SaveAlt as SaveAltIcon, Settings as SettingsIcon, HelpOutline as HelpOutlineIcon,
-    DarkMode as DarkModeIcon, LightMode as LightModeIcon
 } from '@mui/icons-material';
 import Snackbar from '@mui/material/Snackbar';
 import {
     Modal, ModalContent, ModalHeader, ModalBody,
     ModalFooter, Button, useDisclosure, Kbd,
-    Listbox, ListboxItem, Switch
+    Listbox, ListboxItem
 } from "@nextui-org/react";
 import { invoke } from "@tauri-apps/api/core";
 import { readText } from '@tauri-apps/plugin-clipboard-manager';
@@ -16,7 +15,7 @@ import { readText } from '@tauri-apps/plugin-clipboard-manager';
 export default function SideBar({ setVideoPath }:
     { setVideoPath: (videoPath: string) => void }) {
 
-    const [darkMode, setDarkMode] = useState(true);
+    // const [darkMode, setDarkMode] = useState(true);
 
     const [folderUrl, setFolderUrl] = useState<string>("");
     const [videoUrl, setVideoUrl] = useState<string>("");
@@ -28,12 +27,8 @@ export default function SideBar({ setVideoPath }:
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, [darkMode]);
+        document.documentElement.classList.add('dark');
+    }, []);
 
     const handleFolderOpen = async () => {
         try {
@@ -60,7 +55,7 @@ export default function SideBar({ setVideoPath }:
         if (!folderUrl || !videoUrl || isSaving) return;
         try {
             setIsSaving(true);
-            const response = await invoke('save_video', { 
+            const response = await invoke('save_video', {
                 videoPath: videoUrl,
                 folderPath: folderUrl
             });
@@ -82,12 +77,12 @@ export default function SideBar({ setVideoPath }:
                 className={`bg-transparent ${videoUrl ? 'text-cyan-500' : 'text-white'}`}>
                 <InsertLinkIcon sx={{ fontSize: 30 }} />
             </Button>
-            <Button 
-                disabled={!videoUrl || !folderUrl || isSaving} 
-                onClick={handleSave} 
+            <Button
+                disabled={!videoUrl || !folderUrl || isSaving}
+                onClick={handleSave}
                 isDisabled={!videoUrl || !folderUrl || isSaving}
-                color="default" 
-                isIconOnly 
+                color="default"
+                isIconOnly
                 className="bg-transparent"
                 isLoading={isSaving}
             >
@@ -165,22 +160,22 @@ export default function SideBar({ setVideoPath }:
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
                     {/* {(onClose) => ( */}
-                        <>
-                            <ModalHeader className="flex flex-col gap-1 text-white">Nevermore</ModalHeader>
-                            <ModalBody>
-                                <p className="text-white">
-                                    Hail holy queen of the sea, whirling in rags, you're vast and you're sad.
-                                </p>
-                            </ModalBody>
-                            <ModalFooter>
-                                {/* <Button color="danger" variant="light" onPress={onClose}>
+                    <>
+                        <ModalHeader className="flex flex-col gap-1 text-white">Nevermore</ModalHeader>
+                        <ModalBody>
+                            <p className="text-white">
+                                Hail holy queen of the sea, whirling in rags, you're vast and you're sad.
+                            </p>
+                        </ModalBody>
+                        <ModalFooter>
+                            {/* <Button color="danger" variant="light" onPress={onClose}>
                                     Close
                                 </Button>
                                 <Button color="primary" onPress={() => { handleCopyVideoUrl(); onClose(); }}>
                                     Action
                                 </Button> */}
-                            </ModalFooter>
-                        </>
+                        </ModalFooter>
+                    </>
                     {/* )} */}
                 </ModalContent>
             </Modal>
