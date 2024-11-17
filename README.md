@@ -11,3 +11,11 @@ More developments are on the way, before I got fired, who knows which comes firs
 --------------------------------
 
 It seems absolutely nonsense to say that video captioning feels like rocket science, but it does make sense to say so.
+
+--------------------------------
+
+Electron is unbelievable, I've never thought my simple app could take up nearly 2GB out of several hundreds of lines of codes.
+
+I didn't even try to open and check my new installed app, just headed to read the tauri docs and refactored the project, now it makes much more sense.
+
+The refactored code is now rested in the 'tauri' branch, waiting for following improvements.
