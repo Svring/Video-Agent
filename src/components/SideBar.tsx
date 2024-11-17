@@ -15,8 +15,6 @@ import { readText } from '@tauri-apps/plugin-clipboard-manager';
 export default function SideBar({ setVideoPath }:
     { setVideoPath: (videoPath: string) => void }) {
 
-    // const [darkMode, setDarkMode] = useState(true);
-
     const [folderUrl, setFolderUrl] = useState<string>("");
     const [videoUrl, setVideoUrl] = useState<string>("");
 
@@ -142,16 +140,6 @@ export default function SideBar({ setVideoPath }:
                                 <Button color="danger" variant="light" onPress={onClose}>
                                     Close
                                 </Button>
-                                {/* <Switch
-                                    defaultSelected
-                                    size="lg"
-                                    color="success"
-                                    startContent={<LightModeIcon />}
-                                    endContent={<DarkModeIcon />}
-                                    onValueChange={() => setDarkMode(!darkMode)}
-                                >
-                                    Dark mode
-                                </Switch> */}
                             </ModalFooter>
                         </>
                     )}
@@ -159,21 +147,14 @@ export default function SideBar({ setVideoPath }:
             </Modal>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                 <ModalContent>
-                    {/* {(onClose) => ( */}
                     <>
-                        <ModalHeader className="flex flex-col gap-1 text-white">Nevermore</ModalHeader>
+                        <ModalHeader className="flex flex-col gap-1 text-white"></ModalHeader>
                         <ModalBody>
                             <p className="text-white">
                                 Hail holy queen of the sea, whirling in rags, you're vast and you're sad.
                             </p>
                         </ModalBody>
                         <ModalFooter>
-                            {/* <Button color="danger" variant="light" onPress={onClose}>
-                                    Close
-                                </Button>
-                                <Button color="primary" onPress={() => { handleCopyVideoUrl(); onClose(); }}>
-                                    Action
-                                </Button> */}
                         </ModalFooter>
                     </>
                     {/* )} */}

@@ -12,9 +12,9 @@ import {
 } from "@blocknote/react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { forwardRef, useImperativeHandle, useRef } from "react";
-// import Highlighter from "react-highlight-words";
 
-const Editor = forwardRef<{ focus: () => void }, {
+const Editor = forwardRef<{ focus: () => void, blur: () => void }, {
+  focusedComponent: 'player' | 'editor' | null,
   setFocusedComponent: (component: 'player' | 'editor' | null) => void
 }>
   ((props, ref) => {
@@ -24,14 +24,9 @@ const Editor = forwardRef<{ focus: () => void }, {
     useImperativeHandle(ref, () => ({
       focus: () => {
         const focusNextElement = () => {
-          // Get all focusable elements
           const focusable = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
           const elements = Array.from(document.querySelectorAll(focusable));
-
-          // Find current element index
           const currentIndex = elements.indexOf(editorRef.current as Element);
-
-          // Focus next element or first if at end
           const nextElement = elements[currentIndex + 1] || elements[0];
           (nextElement as HTMLElement).focus();
         };
@@ -39,6 +34,9 @@ const Editor = forwardRef<{ focus: () => void }, {
         editorRef.current?.focus();
         focusNextElement();
       },
+      blur: () => {
+        editorRef.current?.blur();
+      }
     }), []);
 
     return (
@@ -47,13 +45,11 @@ const Editor = forwardRef<{ focus: () => void }, {
         tabIndex={0}
         className="flex flex-col mx-0.5 h-full bg-gray-900 rounded-lg p-2 overflow-y-auto scrollbar-hide dark:bg-zinc-900"
         onFocus={() => props.setFocusedComponent('editor')}
+        onBlur={() => {
+          console.log('Editor: Editor blurred');
+        }}
+        data-tauri-drag-region
       >
-        {/* <Highlighter
-          highlightClassName="YourHighlightClass"
-          searchWords={["and", "or", "the"]}
-          autoEscape={true}
-          textToHighlight="The dog is chasing the cat. Or perhaps they're just playing?"
-        /> */}
         <BlockNoteView editor={editor} sideMenu={false} data-theming-css-demo>
           <SideMenuController
             sideMenu={(props) => (

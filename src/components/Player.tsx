@@ -4,12 +4,14 @@ import { Card, CardBody, CardFooter, Slider } from "@nextui-org/react";
 import { Typography } from "@mui/material";
 import { Button, ButtonGroup } from '@nextui-org/react';
 
-const Player = forwardRef<{ focus: () => void }, { videoPath: string, 
-  setFocusedComponent: (component: 'player' | 'editor' | null) => void }>((props, ref) => {
+const Player = forwardRef<{ focus: () => void, blur: () => void }, {
+  videoPath: string,
+  focusedComponent: 'player' | 'editor' | null,
+  setFocusedComponent: (component: 'player' | 'editor' | null) => void
+}>((props, ref) => {
   const reactPlayerRef = useRef<ReactPlayer>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState<number>(0);
-  const [isFocused, setIsFocused] = useState<boolean>(false);
   const [duration, setDuration] = useState<number>(0);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [skipInterval, setSkipInterval] = useState<number>(1);
@@ -18,21 +20,17 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
   useImperativeHandle(ref, () => ({
     focus: () => {
       playerContainerRef.current?.focus();
+    },
+    blur: () => {
+      playerContainerRef.current?.blur();
     }
   }), []);
 
   useEffect(() => {
-    if (!reactPlayerRef.current?.getInternalPlayer()) return;
-    if (!isFocused && reactPlayerRef.current) {
-      reactPlayerRef.current.getInternalPlayer().pause();
-    } else if (isFocused && reactPlayerRef.current) {
-      reactPlayerRef.current.getInternalPlayer().play();
-    }
-  }, [isFocused]);
-
-  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (isFocused && reactPlayerRef.current) {
+      if (props.focusedComponent !== 'player' || !playerContainerRef.current) return;
+
+      if (reactPlayerRef.current) {
         const currentTime = reactPlayerRef.current.getCurrentTime();
         const internalPlayer = reactPlayerRef.current.getInternalPlayer();
 
@@ -70,7 +68,7 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isFocused, skipInterval, duration]);
+  }, [skipInterval, duration]);
 
   const handleProgress = (state: { playedSeconds: number }) => {
     if (!reactPlayerRef.current?.getInternalPlayer()) return;
@@ -80,8 +78,8 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
   const handleMute = () => {
     if (!reactPlayerRef.current?.getInternalPlayer()) return;
     const internalPlayer = reactPlayerRef.current.getInternalPlayer();
-      setIsMuted((prevIsMuted) => {
-        internalPlayer.muted = !prevIsMuted;
+    setIsMuted((prevIsMuted) => {
+      internalPlayer.muted = !prevIsMuted;
       return !prevIsMuted;
     });
   };
@@ -123,27 +121,23 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
       ref={playerContainerRef}
       tabIndex={0}
       onFocus={() => {
-        setIsFocused(true);
         props.setFocusedComponent('player');
       }}
       onBlur={() => {
-        setIsFocused(false);
-        if (reactPlayerRef.current) {
-          reactPlayerRef.current.getInternalPlayer().pause();
-        }
+        reactPlayerRef.current?.getInternalPlayer()?.pause();
       }}
       className="flex flex-col justify-center items-center 
       mx-0.5 h-full bg-zinc-900 rounded-lg focus:outline-none"
     >
-      <Card 
-        isBlurred 
-        shadow="sm" 
-        className={`w-full h-full border-none bg-gray-900 rounded-lg ${
-          isFocused ? 'ring-1 ring-inset ring-cyan-500' : ''
-        }`}
+      <Card
+        isBlurred
+        shadow="sm"
+        className={`w-full h-full border-none bg-gray-900 rounded-lg 
+          ${props.focusedComponent === 'player' ? 'ring-1 ring-inset ring-cyan-500' : ''}`}
       >
-        <CardBody onClick={() => {
-          handlePlayPause();
+        <CardBody onMouseDown={() => {
+          props.setFocusedComponent('player')
+          console.log('card body focused');
         }}>
           <ReactPlayer
             ref={reactPlayerRef}
@@ -151,8 +145,8 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
             width="100%"
             height="100%"
             onProgress={handleProgress}
-            onDuration={(duration) => setDuration(duration)} // Capture video duration
-            playbackRate={frequency} // Set playback rate based on frequency state
+            onDuration={(duration) => setDuration(duration)}
+            playbackRate={frequency}
           />
         </CardBody>
         <CardFooter className="flex flex-col border-t border-gray-700">
@@ -161,39 +155,55 @@ const Player = forwardRef<{ focus: () => void }, { videoPath: string,
             size="sm"
             color="foreground"
             className="max-w-sm"
-            value={(progress / duration) * 100} // Adjust slider value to reflect current time
-            onFocus={() => {
-              // Immediately shift focus back to the container
-              playerContainerRef.current?.focus();
-            }}
-            onClick={() => {
-              // Ensure container gets focus after click interactions too
-              playerContainerRef.current?.focus();
-            }}
+            value={(progress / duration) * 100}
+            onFocus={() => playerContainerRef.current?.focus()}
             onChange={(value) => {
               const newTime = (value as number / 100) * duration;
               setProgress(newTime);
               reactPlayerRef.current?.seekTo(newTime);
-              // Also return focus after value changes
               playerContainerRef.current?.focus();
             }}
           />
           <div className="flex flex-row items-center w-full h-5 px-4 text-xs text-gray-400 max-w-sm">
             <Typography variant="body2">{progress.toFixed(0)}</Typography>
+
+            {/* Skip Interval Buttons */}
             <ButtonGroup size="sm" isIconOnly className="bg-transparent flex-grow">
-              <Button className={`bg-transparent ${skipInterval === 1 ? 'text-cyan-500' : 'text-gray-400'}`} onClick={() => setSkipInterval(1)} isIconOnly>1</Button>
-              <Button className={`bg-transparent ${skipInterval === 2 ? 'text-cyan-500' : 'text-gray-400'}`} onClick={() => setSkipInterval(2)} isIconOnly>2</Button>
-              <Button className={`bg-transparent ${skipInterval === 5 ? 'text-cyan-500' : 'text-gray-400'}`} onClick={() => setSkipInterval(5)} isIconOnly>5</Button>
+              {[1, 2, 5].map((value) => (
+                <Button
+                  key={value}
+                  isIconOnly
+                  className={`bg-transparent ${skipInterval === value ? 'text-cyan-500' : 'text-gray-400'}`}
+                  onClick={() => setSkipInterval(value)}
+                >
+                  {value}
+                </Button>
+              ))}
             </ButtonGroup>
-            <Button onClick={handleMute} size="sm"
-              className={`bg-transparent ${isMuted ? 'text-cyan-500' : 'text-gray-400'}`}>
+
+            {/* Mute Button */}
+            <Button
+              size="sm"
+              onClick={handleMute}
+              className={`bg-transparent ${isMuted ? 'text-cyan-500' : 'text-gray-400'}`}
+            >
               {isMuted ? 'Unmute' : 'Mute'}
             </Button>
+
+            {/* Playback Speed Buttons */}
             <ButtonGroup size="sm" isIconOnly className="bg-transparent flex-grow">
-              <Button className={`bg-transparent ${frequency === 0.5 ? 'text-cyan-500' : 'text-gray-400'}`} onClick={() => setFrequency(0.5)} isIconOnly>0.5</Button>
-              <Button className={`bg-transparent ${frequency === 1 ? 'text-cyan-500' : 'text-gray-400'}`} onClick={() => setFrequency(1)} isIconOnly>1</Button>
-              <Button className={`bg-transparent ${frequency === 2 ? 'text-cyan-500' : 'text-gray-400'}`} onClick={() => setFrequency(2)} isIconOnly>2</Button>
+              {[0.5, 1, 2].map((value) => (
+                <Button
+                  key={value}
+                  isIconOnly
+                  className={`bg-transparent ${frequency === value ? 'text-cyan-500' : 'text-gray-400'}`}
+                  onClick={() => setFrequency(value)}
+                >
+                  {value}
+                </Button>
+              ))}
             </ButtonGroup>
+
             <Typography variant="body2">{duration.toFixed(0)}</Typography>
           </div>
         </CardFooter>
